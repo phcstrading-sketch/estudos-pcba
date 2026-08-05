@@ -258,6 +258,40 @@ button{font-family:inherit; cursor:pointer;}
 .rev-check.checked{background:var(--green); border-color:var(--green); color:#08221a;}
 .empty-hint{color:var(--text-faint); font-size:12.5px; padding:10px 2px;}
 
+/* ============ HOJE ============ */
+.hoje-header{margin-bottom:18px;}
+.hoje-header h2{font-family:var(--font-display); font-size:21px; font-weight:700;}
+.hoje-header .sub{font-size:12.5px; color:var(--text-faint); margin-top:3px;}
+.hoje-stats{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px;}
+.hoje-stat{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; text-align:center; border-top:3px solid var(--gold);}
+.hoje-stat.green{border-top-color:var(--green);}
+.hoje-stat .v{font-family:var(--font-display); font-size:24px; font-weight:700;}
+.hoje-stat .l{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.4px; margin-top:4px;}
+.hoje-section-title{font-family:var(--font-display); font-size:14.5px; font-weight:700; margin:20px 0 10px 0; display:flex; align-items:center; gap:8px;}
+.hoje-section-title .count{font-size:11px; font-weight:700; padding:1px 8px; border-radius:20px; background:var(--surface-2); color:var(--text-faint);}
+.hoje-item{
+  display:flex; align-items:flex-start; gap:13px; padding:14px 16px; border-radius:12px; background:var(--surface);
+  border:1px solid var(--border); margin-bottom:10px;
+}
+.hoje-item.done{opacity:.5;}
+.hoje-item.done .hoje-item-title{text-decoration:line-through;}
+.hoje-item .chk{width:24px; height:24px; border-radius:7px; font-size:14px; margin-top:1px; flex-shrink:0;}
+.hoje-item-body{flex:1; min-width:0;}
+.hoje-item-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.hoje-item-title{display:flex; align-items:center; gap:7px; font-weight:700; font-size:13.5px;}
+.hoje-item-sub{color:var(--text-dim); font-size:12.5px; margin-top:3px;}
+.hoje-item-hora{font-family:var(--font-mono); color:var(--text-faint); font-size:11px; margin-left:auto; flex-shrink:0; white-space:nowrap;}
+.hoje-item-due{font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:20px; letter-spacing:.3px; flex-shrink:0;}
+.hoje-item-due.atrasada{background:rgba(242,83,75,.15); color:var(--red);}
+.hoje-item-due.hoje-tag{background:rgba(245,165,36,.15); color:var(--amber);}
+.hoje-empty-plan{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  padding:60px 20px; color:var(--text-faint); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+}
+.hoje-empty-plan .ic{font-size:38px; margin-bottom:12px; opacity:.6;}
+.hoje-empty-plan h2{font-family:var(--font-display); font-size:17px; color:var(--text-dim); margin-bottom:6px;}
+.hoje-empty-plan p{font-size:13px; max-width:380px;}
+
 /* ============ CADERNO DE ERROS ============ */
 .erro-form{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px;}
 .erro-form .full{grid-column:1/-1;}
@@ -504,8 +538,13 @@ button{font-family:inherit; cursor:pointer;}
       </div>
     </div>
 
+    <!-- ===== HOJE ===== -->
+    <section class="view" id="view-hoje">
+      <div id="hojeContainer"></div>
+    </section>
+
     <!-- ===== DASHBOARD ===== -->
-    <section class="view" id="view-dashboard">
+    <section class="view" id="view-dashboard" hidden>
       <div class="assist-card">
         <div class="assist-head"><span class="ic">🧭</span><div><h3>Assistente offline</h3><div style="font-size:11px;color:var(--text-faint);margin-top:1px;">Interpreta seus dados localmente — sem internet, sem IA generativa</div></div></div>
         <div id="assistList"></div>
@@ -549,8 +588,10 @@ button{font-family:inherit; cursor:pointer;}
 
       <div class="section-title">Progresso geral do ciclo</div>
       <div class="card">
-        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px;">
-          <span>Dia <b id="dash-diaatual">1</b> de 60</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:8px;">
+          <span>📖 Dia do Plano: <b id="dash-diaatual">1</b> de 60</span>
+          <span>📅 Data: <b id="dash-dataatual">--</b></span>
+          <span>⏳ Dias restantes: <b id="dash-diasrestantesplano">--</b></span>
           <span id="dash-pct">0%</span>
         </div>
         <div class="progress-track"><div class="progress-fill" id="dash-progressbar" style="width:0%"></div></div>
@@ -872,6 +913,13 @@ button{font-family:inherit; cursor:pointer;}
         </div>
         <div class="settings-row">
           <div>
+            <div class="lbl">Data de início dos estudos</div>
+            <div class="desc" id="cfgDataInicioDesc">Define quando é o Dia 1 do seu cronograma de 60 dias</div>
+          </div>
+          <button class="btn" id="cfgDataInicioBtn">Alterar</button>
+        </div>
+        <div class="settings-row">
+          <div>
             <div class="lbl">Data da prova</div>
             <div class="desc">06/12/2026 — usada para o cronômetro regressivo</div>
           </div>
@@ -940,6 +988,25 @@ button{font-family:inherit; cursor:pointer;}
         <div><label class="field-lbl">Acertos</label><input class="field-input" type="number" min="0" id="modalQAcertos"></div>
         <div class="q-pct" id="modalQPct">—</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DATA DE INÍCIO DOS ESTUDOS (onboarding + alteração) ===== -->
+<div class="modal-overlay" id="dataInicioModalOverlay" hidden style="z-index:300;">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="mh-info">
+        <div class="mh-day" id="dataInicioModalTag">CONFIGURAÇÃO INICIAL</div>
+        <h3 id="dataInicioModalTitle">Quando você começa o Dia 1?</h3>
+        <div class="mh-foco" id="dataInicioModalDesc">O cronograma do plano tem 60 dias fixos (Dia 1 ao Dia 60). Informe a data real em que você vai iniciar (ou já iniciou) o Dia 1 — o app calcula sozinho a data de todos os outros dias, revisões, simulados e metas.</div>
+      </div>
+      <button class="modal-close" id="dataInicioCloseBtn" style="display:none;">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-lbl">Data de início dos estudos (Dia 1)</label>
+      <input class="field-input" type="date" id="dataInicioInput" style="margin-top:6px;">
+      <button class="btn primary" id="dataInicioConfirmBtn" style="width:100%; margin-top:16px; justify-content:center;">Confirmar</button>
     </div>
   </div>
 </div>
@@ -1029,6 +1096,7 @@ function normalizeState(s){
   s.simuladosCustom = s.simuladosCustom || [];
   s.biblioteca = s.biblioteca || [];
   s.theme = s.theme || "dark";
+  s.dataInicio = s.dataInicio || null; // data real do Dia 1 do plano (definida pelo usuário)
   return s;
 }
 
@@ -1041,6 +1109,27 @@ function addDaysISO(baseISO, n){
 function fmtDateBR(iso){
   const [y,m,d] = iso.split('-');
   return `${d}/${m}/${y}`;
+}
+
+/* ======================================================================
+   CRONOGRAMA DINÂMICO — a data real de cada "Dia N" do plano é sempre
+   derivada de state.dataInicio (definida pelo usuário na configuração
+   inicial). O PDF/JSON do PLANO nunca é alterado: apenas a data exibida
+   para cada dia é recalculada a partir desse ponto de partida.
+   ====================================================================== */
+function temDataInicio(){ return !!state.dataInicio; }
+
+// Dia 1 = dataInicio, Dia 2 = dataInicio+1, ... Dia N = dataInicio+(N-1)
+function dataDoDia(diaNum){
+  if(!state.dataInicio) return null;
+  return addDaysISO(state.dataInicio, diaNum-1);
+}
+
+// dado um dia-calendário ISO, descobre a que "Dia N" do plano ele corresponde
+function diaDoPlanoNaData(iso){
+  if(!state.dataInicio) return null;
+  const ms = new Date(iso+"T00:00:00") - new Date(state.dataInicio+"T00:00:00");
+  return Math.round(ms/86400000) + 1;
 }
 
 // carrega o estado inicial: IndexedDB -> migração de localStorage -> padrão vazio
@@ -1097,9 +1186,59 @@ function toast(msg){
 }
 
 /* ======================================================================
+   DATA DE INÍCIO DOS ESTUDOS — configuração inicial (onboarding,
+   obrigatória na primeira abertura) e alteração posterior (Configurações).
+   Ao confirmar, todas as telas são recalculadas via renderAll(); nenhum
+   progresso é apagado, pois isso só afeta a data exibida para cada dia.
+   ====================================================================== */
+let dataInicioModalMode = 'setup';
+
+function openDataInicioModal(mode){
+  dataInicioModalMode = mode;
+  const overlay = document.getElementById('dataInicioModalOverlay');
+  const closeBtn = document.getElementById('dataInicioCloseBtn');
+  const tag = document.getElementById('dataInicioModalTag');
+  const title = document.getElementById('dataInicioModalTitle');
+  const desc = document.getElementById('dataInicioModalDesc');
+  const input = document.getElementById('dataInicioInput');
+
+  if(mode === 'setup'){
+    tag.textContent = 'CONFIGURAÇÃO INICIAL';
+    title.textContent = 'Quando você começa o Dia 1?';
+    desc.textContent = 'O cronograma do plano tem 60 dias fixos (Dia 1 ao Dia 60). Informe a data real em que você vai iniciar (ou já iniciou) o Dia 1 — o app calcula sozinho a data de todos os outros dias, revisões, simulados e metas. Você pode alterar isso depois em Configurações.';
+    closeBtn.style.display = 'none';
+  } else {
+    tag.textContent = 'ALTERAR DATA DE INÍCIO';
+    title.textContent = 'Alterar a data do Dia 1';
+    desc.textContent = 'Isso recalcula automaticamente a data de todos os dias, das revisões, dos simulados e das metas. O cronograma e o seu progresso não são alterados nem perdidos.';
+    closeBtn.style.display = '';
+  }
+  input.value = state.dataInicio || todayISO();
+  overlay.hidden = false;
+}
+
+document.getElementById('dataInicioCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('dataInicioModalOverlay').hidden = true;
+});
+
+document.getElementById('dataInicioConfirmBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('dataInicioInput');
+  if(!input.value){ toast('Selecione uma data válida.'); return; }
+  const isFirstTime = !state.dataInicio;
+  state.dataInicio = input.value;
+  saveState();
+  document.getElementById('dataInicioModalOverlay').hidden = true;
+  renderAll();
+  toast(isFirstTime ? 'Data de início configurada! Dia 1 = ' + fmtDateBR(input.value) : 'Data de início atualizada — cronograma recalculado.');
+});
+
+document.getElementById('cfgDataInicioBtn').addEventListener('click', ()=> openDataInicioModal('change'));
+
+/* ======================================================================
    NAVEGAÇÃO
    ====================================================================== */
 const NAV_ITEMS = [
+  {id:"hoje", ic:"☀", label:"Hoje", ready:true, sub:"O que fazer hoje: blocos do dia e revisões pendentes"},
   {id:"dashboard", ic:"◆", label:"Dashboard", ready:true, sub:"Visão geral do seu ciclo de estudos"},
   {id:"planejamento", ic:"▤", label:"Planejamento", ready:true, sub:"Cronograma completo dos 60 dias, importado do plano"},
   {id:"biblioteca", ic:"★", label:"Biblioteca", ready:true, sub:"PDFs, resumos, mapas mentais, flashcards e leis por assunto"},
@@ -1129,7 +1268,7 @@ function go(id){
   document.getElementById('viewTitle').textContent = item.label;
   document.getElementById('viewSub').textContent = item.sub;
 
-  const realViews = {dashboard:'view-dashboard', planejamento:'view-planejamento', materias:'view-materias', config:'view-config',
+  const realViews = {hoje:'view-hoje', dashboard:'view-dashboard', planejamento:'view-planejamento', materias:'view-materias', config:'view-config',
     ciclo:'view-ciclo', erros:'view-erros', kanban:'view-kanban', estatisticas:'view-estatisticas', incidencia:'view-incidencia', tempo:'view-tempo',
     biblioteca:'view-biblioteca'};
   document.querySelectorAll('.view').forEach(v=>v.hidden = true);
@@ -1248,6 +1387,11 @@ function renderDashboard(){
   let diaAtual = 1;
   PLANO.dias.forEach(d=>{ if(d.blocos.some(b=>isDone(b.id))) diaAtual = d.dia; });
   document.getElementById('dash-diaatual').textContent = diaAtual;
+
+  // data real correspondente ao Dia atual do plano + dias restantes do plano (60 - dia atual)
+  const dataAtualPlano = dataDoDia(diaAtual);
+  document.getElementById('dash-dataatual').textContent = dataAtualPlano ? fmtDateBR(dataAtualPlano) : '--';
+  document.getElementById('dash-diasrestantesplano').textContent = Math.max(0, 60 - diaAtual);
 
   // horas estudadas = blocos concluídos (cada bloco ~1h no plano)
   document.getElementById('stat-horas').textContent = done + 'h';
@@ -1376,9 +1520,11 @@ function renderDiaCard(d){
   const pctDia = Math.round((doneCount/d.blocos.length)*100);
   const isCollapsed = collapsedDays.has(d.dia);
 
+  const dataDia = dataDoDia(d.dia);
   const head = document.createElement('div');
   head.className = 'day-card-head' + (isCollapsed?' collapsed':'');
   head.innerHTML = `<span class="day-badge">DIA ${String(d.dia).padStart(2,'0')}</span>
+    ${dataDia ? `<span class="dprog" style="margin-left:-4px;">${fmtDateBR(dataDia)}</span>` : ''}
     <div class="day-mini-bar"><div class="day-mini-fill" style="width:${pctDia}%"></div></div>
     <span class="dprog">${doneCount}/${d.blocos.length}</span>
     <span class="chevron">▾</span>`;
@@ -1465,10 +1611,196 @@ function allRevisaoItems(){
     REV_INTERVALS.forEach(r=>{
       const rev = state.revisoes[blockId][r.key];
       if(!rev) return;
-      items.push({blockId, block:b, key:r.key, label:r.label, due:rev.due, done:rev.done});
+      items.push({blockId, block:b, key:r.key, label:r.label, due:rev.due, done:rev.done, doneAt:rev.doneAt});
     });
   });
   return items;
+}
+
+function toggleRevisaoDone(blockId, key){
+  state.revisoes[blockId][key].done = true;
+  state.revisoes[blockId][key].doneAt = todayISO();
+  saveState();
+  renderAll();
+  toast('Revisão marcada como concluída.');
+}
+
+/* ======================================================================
+   MODO HOJE — prioridade nº 1: em vez de navegar pelo cronograma, mostra
+   só o que precisa ser feito hoje (blocos do Dia N correspondente à data
+   de hoje + revisões pendentes), com tempo previsto e progresso do dia.
+   ====================================================================== */
+const REV_TEMPO_MIN = 20; // estimativa de tempo por revisão espaçada
+
+function parseHoraMinutos(horaStr){
+  const partes = (horaStr||'').split(/[–-]/).map(s=>s.trim());
+  if(partes.length!==2) return 60;
+  const [h1,m1] = partes[0].split(':').map(Number);
+  const [h2,m2] = partes[1].split(':').map(Number);
+  if([h1,m1,h2,m2].some(n=>isNaN(n))) return 60;
+  const min = (h2*60+m2) - (h1*60+m1);
+  return min>0 ? min : 60;
+}
+
+function fmtMinutos(totalMin){
+  const h = Math.floor(totalMin/60);
+  const m = Math.round(totalMin%60);
+  if(h===0) return `${m}min`;
+  if(m===0) return `${h}h`;
+  return `${h}h${String(m).padStart(2,'0')}`;
+}
+
+function diaPlanoDeHoje(){
+  if(!temDataInicio()) return null;
+  return diaDoPlanoNaData(todayISO());
+}
+
+function hojeItem({id, done, dotColor, title, sub, rightBadge, dueBadge, onToggle, onDetail}){
+  const row = document.createElement('div');
+  row.className = 'hoje-item' + (done?' done':'');
+  row.innerHTML = `
+    <button class="chk ${done?'checked':''}" data-hoje-chk="${id}">✓</button>
+    <div class="hoje-item-body">
+      <div class="hoje-item-head">
+        <div class="hoje-item-title">${dotColor?`<span class="materia-dot" style="background:${dotColor}"></span>`:''}${title}${dueBadge||''}</div>
+        ${rightBadge?`<span class="hoje-item-hora">${rightBadge}</span>`:''}
+      </div>
+      ${sub?`<div class="hoje-item-sub">${sub}</div>`:''}
+    </div>
+    ${onDetail?'<button class="detail-btn" data-hoje-detail="'+id+'" title="Checklist, revisões e questões">⋯</button>':''}`;
+  row.querySelector('[data-hoje-chk]').addEventListener('click', (e)=>{ e.stopPropagation(); onToggle(); });
+  if(onDetail){ row.querySelector('[data-hoje-detail]').addEventListener('click', (e)=>{ e.stopPropagation(); onDetail(); }); }
+  return row;
+}
+
+function renderHoje(){
+  const container = document.getElementById('hojeContainer');
+  if(!container) return;
+  container.innerHTML = '';
+
+  const hojeISO = todayISO();
+  const dataFmt = fmtDateBR(hojeISO);
+
+  // sem data de início configurada ainda: pede para configurar
+  if(!temDataInicio()){
+    const empty = document.createElement('div');
+    empty.className = 'hoje-empty-plan';
+    empty.innerHTML = `<div class="ic">🗓️</div><h2>Configure sua data de início</h2><p>Para o modo Hoje mostrar o que estudar, informe quando começa o Dia 1 do seu cronograma de 60 dias.</p>`;
+    const btn = document.createElement('button');
+    btn.className = 'btn primary'; btn.style.marginTop = '16px'; btn.textContent = 'Configurar data de início';
+    btn.addEventListener('click', ()=> openDataInicioModal('setup'));
+    empty.appendChild(btn);
+    container.appendChild(empty);
+    return;
+  }
+
+  const diaPlano = diaPlanoDeHoje();
+  const diaObj = (diaPlano>=1 && diaPlano<=60) ? PLANO.dias.find(d=>d.dia===diaPlano) : null;
+  const blocosHoje = diaObj ? diaObj.blocos : [];
+
+  // revisões relevantes de hoje: pendentes (due <= hoje) OU já concluídas hoje mesmo
+  const revItens = allRevisaoItems().filter(i => i.due <= hojeISO && (!i.done || i.doneAt === hojeISO))
+    .sort((a,b)=> a.due.localeCompare(b.due));
+  const revPendentes = revItens.filter(i=>!i.done);
+  const revFeitasHoje = revItens.filter(i=>i.done);
+
+  // header
+  const header = document.createElement('div');
+  header.className = 'hoje-header';
+  let subTxt;
+  if(diaObj) subTxt = `Dia ${diaObj.dia} de 60 do seu plano`;
+  else if(diaPlano < 1) subTxt = `Seu Dia 1 começa em ${fmtDateBR(dataDoDia(1))}`;
+  else subTxt = 'Os 60 dias do plano já foram concluídos — hora de revisar e repetir simulados';
+  header.innerHTML = `<h2>📅 Hoje · ${dataFmt}</h2><div class="sub">${subTxt}</div>`;
+  container.appendChild(header);
+
+  // nada para fazer hoje (fora do intervalo do plano e sem revisões)
+  if(!diaObj && revItens.length===0){
+    const empty = document.createElement('div');
+    empty.className = 'hoje-empty-plan';
+    if(diaPlano < 1){
+      empty.innerHTML = `<div class="ic">⏳</div><h2>Ainda não começou</h2><p>Seu Dia 1 está marcado para ${fmtDateBR(dataDoDia(1))}. Volte aqui nessa data para ver o que estudar.</p>`;
+    } else {
+      empty.innerHTML = `<div class="ic">🎉</div><h2>Plano de 60 dias concluído!</h2><p>Sem blocos ou revisões pendentes para hoje. Bom momento para reiniciar o ciclo ou reforçar com simulados extras.</p>`;
+    }
+    container.appendChild(empty);
+    return;
+  }
+
+  // estatísticas do dia: tempo previsto e progresso
+  const doneBlocos = blocosHoje.filter(b=>isDone(b.id)).length;
+  const totalMinBlocos = blocosHoje.reduce((s,b)=> s+parseHoraMinutos(b.hora), 0);
+  const totalMinRev = revItens.length * REV_TEMPO_MIN;
+  const tempoPrevistoMin = totalMinBlocos + totalMinRev;
+  const totalItens = blocosHoje.length + revItens.length;
+  const doneItens = doneBlocos + revFeitasHoje.length;
+  const progresso = totalItens>0 ? Math.round((doneItens/totalItens)*100) : 100;
+
+  const stats = document.createElement('div');
+  stats.className = 'hoje-stats';
+  stats.innerHTML = `
+    <div class="hoje-stat"><div class="v">⏱ ${fmtMinutos(tempoPrevistoMin)}</div><div class="l">Tempo previsto</div></div>
+    <div class="hoje-stat green"><div class="v">${progresso}%</div><div class="l">Progresso de hoje</div></div>`;
+  container.appendChild(stats);
+
+  // blocos de estudo do dia
+  if(blocosHoje.length>0){
+    const title = document.createElement('div');
+    title.className = 'hoje-section-title';
+    title.innerHTML = `📖 Blocos de estudo <span class="count">${doneBlocos}/${blocosHoje.length}</span>`;
+    container.appendChild(title);
+
+    blocosHoje.forEach(b=>{
+      const row = hojeItem({
+        id:'blk-'+b.id, done:isDone(b.id), dotColor:materiaColor(b.materia),
+        title: b.materia, sub: b.assunto, rightBadge: b.hora,
+        onToggle: ()=> toggleDone(b.id),
+        onDetail: ()=> openModal(b.id)
+      });
+      container.appendChild(row);
+    });
+  }
+
+  // revisões pendentes (hoje + atrasadas) e concluídas hoje
+  if(revPendentes.length>0){
+    const title = document.createElement('div');
+    title.className = 'hoje-section-title';
+    title.innerHTML = `🔁 Revisões pendentes <span class="count">${revPendentes.length}</span>`;
+    container.appendChild(title);
+
+    revPendentes.forEach(item=>{
+      const atrasada = item.due < hojeISO;
+      const diasAtraso = atrasada ? Math.round((new Date(hojeISO) - new Date(item.due))/86400000) : 0;
+      const dueBadge = atrasada
+        ? ` <span class="hoje-item-due atrasada">${diasAtraso}d atrasada</span>`
+        : ` <span class="hoje-item-due hoje-tag">${item.label}</span>`;
+      const row = hojeItem({
+        id:'rev-'+item.blockId+'-'+item.key, done:false, dotColor:materiaColor(item.block.materia),
+        title: `Revisão ${item.block.materia} (${item.label})`, sub: item.block.assunto,
+        dueBadge,
+        onToggle: ()=> toggleRevisaoDone(item.blockId, item.key),
+        onDetail: ()=> openModal(item.blockId)
+      });
+      container.appendChild(row);
+    });
+  }
+
+  if(revFeitasHoje.length>0){
+    const title = document.createElement('div');
+    title.className = 'hoje-section-title';
+    title.innerHTML = `✅ Concluído hoje <span class="count">${revFeitasHoje.length}</span>`;
+    container.appendChild(title);
+
+    revFeitasHoje.forEach(item=>{
+      const row = hojeItem({
+        id:'revdone-'+item.blockId+'-'+item.key, done:true, dotColor:materiaColor(item.block.materia),
+        title: `Revisão ${item.block.materia} (${item.label})`, sub: item.block.assunto,
+        onToggle: ()=>{}, onDetail: ()=> openModal(item.blockId)
+      });
+      row.querySelector('.chk').disabled = true;
+      container.appendChild(row);
+    });
+  }
 }
 
 function renderCiclo(){
@@ -1506,11 +1838,7 @@ function renderCiclo(){
         <div class="rev-due">${dueTxt}</div>
         <button class="rev-check" data-rev="${item.blockId}|${item.key}">✓</button>`;
       row.querySelector('.rev-check').addEventListener('click', ()=>{
-        state.revisoes[item.blockId][item.key].done = true;
-        state.revisoes[item.blockId][item.key].doneAt = todayISO();
-        saveState();
-        renderAll();
-        toast('Revisão marcada como concluída.');
+        toggleRevisaoDone(item.blockId, item.key);
       });
       wrap.appendChild(row);
     });
@@ -1740,7 +2068,8 @@ const modalOverlay = document.getElementById('modalOverlay');
 function openModal(blockId){
   modalBlockId = blockId;
   const b = blockById(blockId);
-  document.getElementById('modalDay').textContent = `DIA ${String(b.dia).padStart(2,'0')} · ${b.hora}`;
+  const dataBloco = dataDoDia(b.dia);
+  document.getElementById('modalDay').textContent = `DIA ${String(b.dia).padStart(2,'0')}${dataBloco? ' · '+fmtDateBR(dataBloco) : ''} · ${b.hora}`;
   document.getElementById('modalMateriaAssunto').textContent = `${b.materia} — ${b.assunto}`;
   document.getElementById('modalFoco').textContent = '💡 ' + b.foco;
 
@@ -1884,6 +2213,13 @@ function renderMetas(){
   // sync inputs em Configurações
   const ch = document.getElementById('cfgMetaHoras'); if(ch && document.activeElement!==ch) ch.value = state.metas.horas;
   const cq = document.getElementById('cfgMetaQuestoes'); if(cq && document.activeElement!==cq) cq.value = state.metas.questoes;
+
+  const cfgDataDesc = document.getElementById('cfgDataInicioDesc');
+  if(cfgDataDesc){
+    cfgDataDesc.innerHTML = state.dataInicio
+      ? `Dia 1 = <b>${fmtDateBR(state.dataInicio)}</b> · Dia 60 = <b>${fmtDateBR(dataDoDia(60))}</b>`
+      : 'Ainda não configurada';
+  }
 }
 document.getElementById('cfgMetaSaveBtn').addEventListener('click', ()=>{
   state.metas.horas = Math.max(1, parseInt(document.getElementById('cfgMetaHoras').value||'20',10));
@@ -2632,14 +2968,14 @@ function generateRecommendations(){
     recs.push({ic:'🔁', html:`Você precisa revisar <b>${precisaRevisar.nome}</b>: ${precisaRevisar.errosGraves} erro(s) recorrente(s) no caderno e ${precisaRevisar.revAtrasadas} revisão(ões) atrasada(s) nela.`});
   }
 
-  // 5) atraso no cronograma (calendário real x progresso)
-  const inicioRodada = new Date(2026,7,3);
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const diaSugerido = Math.min(60, Math.max(1, Math.floor((hoje - inicioRodada)/86400000) + 1));
+  // 5) atraso no cronograma (calendário real, a partir da data de início definida pelo usuário, x progresso)
   let diaAtual = 1;
   PLANO.dias.forEach(d=>{ if(d.blocos.some(b=>isDone(b.id))) diaAtual = d.dia; });
-  if(diaSugerido > diaAtual + 1){
-    recs.push({ic:'📆', html:`Pelo calendário da Rodada 1, hoje seria por volta do <b>Dia ${diaSugerido}</b>, mas seu progresso está no Dia ${diaAtual}. Sem culpa — só ajuste o ritmo desta semana.`});
+  if(temDataInicio()){
+    const diaSugerido = Math.min(60, Math.max(1, diaDoPlanoNaData(hojeISO)));
+    if(diaSugerido > diaAtual + 1){
+      recs.push({ic:'📆', html:`Pela sua data de início (${fmtDateBR(state.dataInicio)}), hoje seria por volta do <b>Dia ${diaSugerido}</b>, mas seu progresso está no Dia ${diaAtual}. Sem culpa — só ajuste o ritmo desta semana.`});
+    }
   }
 
   if(recs.length===0){
@@ -2663,6 +2999,7 @@ function renderAssistente(){
    INIT
    ====================================================================== */
 function renderAll(){
+  renderHoje();
   renderDashboard();
   renderPlanejamento();
   renderMaterias();
@@ -2682,10 +3019,12 @@ async function initApp(){
   state = await initialLoadState();
   applyTheme();
   renderAll();
-  go('dashboard');
+  go('hoje');
   document.getElementById('bootSplash').classList.add('hidden');
   if(toastQueued){ toast(toastQueued); toastQueued = null; }
   initPWA();
+  // primeira abertura: exige a data de início antes de liberar o uso normal
+  if(!state.dataInicio){ openDataInicioModal('setup'); }
 }
 initApp();
 </script>
