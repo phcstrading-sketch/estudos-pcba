@@ -2621,7 +2621,7 @@ function initPWA(){
       `;
       const swBlob = new Blob([swSource], {type:'text/javascript'});
       const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl, {scope:'./'}).catch(()=>{
+      navigator.serviceWorker.register('./sw.js', {scope:'./'}).catch(()=>{
         console.warn('Service worker não pôde ser registrado (normal em file:// ou http sem TLS).');
       });
     }
